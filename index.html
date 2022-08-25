@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+    />
+    <title>Dessines en canvas !</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header></header>
+
+    <section class="container">
+      <div class="header">
+        <div>
+          <h1>Dessine avec du canvas !</h1>
+        </div>
+        <div class="controller">
+          <div class="colorSelector">
+            Sélectionner la couleur :
+            <input id="base" type="color" name="base" value="#FEFF00" />
+          </div>
+          <div class="sizeSelector">
+            Sélectionner l'épaisseur :
+            <button class="width25 width" value="25">25</button>
+            <button class="width50 width active1" value="50">50</button>
+            <button class="width75 width" value="75">75</button>
+            <button class="width100 width" value="100">100</button>
+          </div>
+          <div class="">
+            Taille De la gomme :
+            <button class="clear25 clear" value="25">25</button>
+            <button class="clear50 clear" value="50">50</button>
+            <button class="clear75 clear" value="75">75</button>
+            <button class="clear100 clear" value="100">100</button>
+          </div>
+          <button class="eraseAll">Effacer</button>
+        </div>
+      </div>
+      <canvas class="canvas"></canvas>
+    </section>
+  </body>
+  <script src="../../js/nav.js"></script>
+
+  <script>
+    const canvas = document.querySelector("canvas");
+    const ctx = canvas.getContext("2d");
+    const buttonErase = document.querySelector(".eraseAll");
+    const colorInput = document.querySelector("#base");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.lineWidth = 50;
+
+    const buttonsWidth = document.querySelectorAll(".width");
+    const buttons = document.querySelectorAll("button");
+
+    let isDrawing = false;
+    let isClearing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function draw(e) {
+      if (!isDrawing) return;
+      ctx.beginPath();
+      // start from
+      ctx.moveTo(lastX, lastY);
+      // go to
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.globalCompositeOperation = "source-over";
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+
+    function clear(e) {
+      if (!isClearing) return;
+      ctx.beginPath();
+      // start from
+      ctx.moveTo(lastX, lastY);
+      // go to
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.arc(lastX, lastY, 10, 0, Math.PI * 2, true);
+      ctx.fill();
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+
+    function changeColor(e) {
+      ctx.strokeStyle = this.value;
+    }
+
+    function changeWidth() {
+      if (this.classList.contains("active1")) return;
+      else {
+        buttons.forEach((button) => {
+          button.classList.remove("active1");
+        });
+        this.classList.add("active1");
+      }
+      ctx.lineWidth = this.value;
+    }
+
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mousemove", clear);
+    canvas.addEventListener("mouseup", () => (isDrawing = false));
+    canvas.addEventListener("mouseout", () => (isDrawing = false));
+    canvas.addEventListener("mouseup", () => (isClearing = false));
+    canvas.addEventListener("mouseout", () => (isClearing = false));
+
+    canvas.addEventListener("mousedown", (e) => {
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+      buttons.forEach((button) => {
+        if (
+          button.classList.contains("active1") &&
+          button.classList.contains("width")
+        ) {
+          isDrawing = true;
+          isClearing = false;
+        } else if (
+          button.classList.contains("active1") &&
+          button.classList.contains("clear")
+        ) {
+          isDrawing = false;
+          isClearing = true;
+        }
+      });
+    });
+
+    buttonErase.addEventListener("click", () =>
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    );
+    colorInput.addEventListener("change", changeColor);
+    colorInput.addEventListener("click", changeColor);
+    buttons.forEach((button) => button.addEventListener("click", changeWidth));
+    buttons.forEach((button) => button.addEventListener("onload", changeWidth));
+  </script>
+</html>
